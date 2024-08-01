@@ -52,6 +52,8 @@ app.listen(3000, () => {
 });
 ```
 
+Note: It is recommended to use `crypto.timingSafeEqual(a, b)` [(Doc)](https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b) to compare the user and password strings.
+
 ## Running Tests
 
 

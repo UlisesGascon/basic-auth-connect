@@ -1,4 +1,5 @@
 const http = require('http');
+const crypto = require('crypto');
 
 /*!
  * Connect - basicAuth
@@ -25,8 +26,10 @@ const http = require('http');
  *
  *     connect()
  *       .use(connect.basicAuth(function(user, pass){
- *         return 'tj' == user && 'wahoo' == pass;
+ *         return 'tj' === user && 'wahoo' === pass;
  *       }))
+ *  
+ *  Note: it is recommended to use `crypto.timingSafeEqual(a, b)` https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b
  *
  *  Async callback verification, accepting `fn(err, user)`.
  *
@@ -49,7 +52,19 @@ module.exports = function basicAuth(callback, realm) {
     password = realm;
     if (typeof password !== 'string') throw new Error('password argument required');
     realm = arguments[2];
-    callback = (user, pass) => user === username && pass === password;
+    callback = (user, pass) => {
+      const userBuffer = Buffer.from(user);
+      const passBuffer = Buffer.from(pass);
+      const usernameBuffer = Buffer.from(username);
+      const passwordBuffer = Buffer.from(password);
+    
+      return (
+        userBuffer.length === usernameBuffer.length &&
+        passBuffer.length === passwordBuffer.length &&
+        crypto.timingSafeEqual(userBuffer, usernameBuffer) &&
+        crypto.timingSafeEqual(passBuffer, passwordBuffer)
+      );
+    };
   }
 
   realm = realm || 'Authorization Required';
